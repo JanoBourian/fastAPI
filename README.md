@@ -22,6 +22,10 @@ We have other alternative
 docker run -d --name postresfastapi -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_USER=myusername -e PGDATA=/var/lib/postgresql/data/pgdata -p 5432:5432 -v C:\\Users\\super\\Documents\\databases\\FastAPI:/var/lib/postgresql/data -d postgres
 ```
 
+```cmd 
+docker exec -it 481915eaf1ce psql -U postgres
+```
+
 ## Packages
 
 * sqlalchemy

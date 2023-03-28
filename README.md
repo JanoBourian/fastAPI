@@ -19,7 +19,7 @@ docker run -d \
 We have other alternative
 
 ```cmd
-docker run -d --name postresfastapi -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_USER=myusername -e PGDATA=/var/lib/postgresql/data/pgdata -p 5432:5432 -v C:\\Users\\super\\Documents\\databases\\FastAPI:/var/lib/postgresql/data -d postgres
+docker run -d --name postgresfastapi -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_USER=postgres -e PGDATA=/var/lib/postgresql/data/pgdata -p 5432:5432 -v C:\\Users\\super\\Documents\\database\\fastapidatabase:/var/lib/postgresql/data -d postgres
 ```
 
 ```cmd 

@@ -48,3 +48,4 @@ async def create_book(request:Request):
     query = books.insert().values(**data)
     last_record_id = await database.execute(query)
     return {"id": last_record_id}
+

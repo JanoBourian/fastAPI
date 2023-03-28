@@ -5,7 +5,7 @@ The FastAPI course with AWS
 
 From the Docker documentation we have the next code:
 
-```cmd
+```bash
 docker run -d \
 	--name postresfastapi \
 	-e POSTGRES_PASSWORD=mysecretpassword \
@@ -18,12 +18,12 @@ docker run -d \
 
 We have other alternative
 
-```cmd
-docker run -d --name postgresfastapi -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_USER=postgres -e PGDATA=/var/lib/postgresql/data/pgdata -p 5432:5432 -v C:\\Users\\super\\Documents\\database\\fastapidatabase:/var/lib/postgresql/data -d postgres
+```bash
+docker run -d --name fastapibd -e POSTGRES_PASSWORD=password -e POSTGRES_USER=username -e PGDATA=/var/lib/postgresql/data/pgdata -p 5433:5432 -v C:\\Users\\super\\Documents\\databases\\datainformation:/var/lib/postgresql/data -d postgres
 ```
 
-```cmd 
-docker exec -it 481915eaf1ce psql -U postgres
+```bash 
+docker exec -it f9afd72f864b psql -U username
 ```
 
 ## Packages
@@ -70,7 +70,7 @@ metadata.create_all(engine)
 
 Start the server 
 
-```cmd
+```bash
 uvicorn main:app --host 0.0.0.0 --port 80
 uvicorn main:app --reload
 ```

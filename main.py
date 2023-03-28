@@ -1,7 +1,7 @@
 import databases
 import sqlalchemy
 
-DATABASE_URL = "postgresql://postgres:mysecretpassword@localhost:5432/store"
+DATABASE_URL = "postgresql://username:password@localhost:5433/store"
 
 database = databases.Database(DATABASE_URL)
 metadata = sqlalchemy.MetaData()
@@ -48,4 +48,3 @@ async def create_book(request:Request):
     query = books.insert().values(**data)
     last_record_id = await database.execute(query)
     return {"id": last_record_id}
-

@@ -28,6 +28,7 @@ docker exec -it f9afd72f864b psql -U username
 
 ## Packages
 
+* alembic
 * sqlalchemy
 * databases
 * asyncpg
@@ -102,4 +103,15 @@ async def create_book(request:Request):
     query = books.insert().values(**data)
     last_record_id = await database.execute(query)
     return {"id": last_record_id}
+```
+
+## Alembic migration
+
+We should change in *alembic.ini*  = sqlalchemy.url
+We should change in *env.py* = target_metadata
+
+```sh
+alembic init migrations
+alembic revision --autogenerate -m "Initial"
+alembic upgrade head
 ```

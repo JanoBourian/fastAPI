@@ -115,3 +115,75 @@ alembic init migrations
 alembic revision --autogenerate -m "Initial"
 alembic upgrade head
 ```
+
+## One to many
+
+```python
+books = sqlalchemy.Table(
+    "books",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("title", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("author", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("pages", sqlalchemy.Integer, nullable=False),
+    sqlalchemy.Column(
+        "reader_id", sqlalchemy.ForeignKey("readers.id"), nullable=False, index=True
+    ),
+)
+
+readers = sqlalchemy.Table(
+    "readers",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("first_name", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("last_name", sqlalchemy.String, nullable=False),
+)
+```
+
+## Many-to-Many
+
+```python
+books = sqlalchemy.Table(
+    "books",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("title", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("author", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("pages", sqlalchemy.Integer, nullable=False),
+    sqlalchemy.Column(
+        "reader_id", sqlalchemy.ForeignKey("readers.id"), nullable=False, index=True
+    ),
+)
+
+readers = sqlalchemy.Table(
+    "readers",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("first_name", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("last_name", sqlalchemy.String, nullable=False),
+)
+
+readers_books = sqlalchemy.Table(
+    "readers_books",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column(
+        "reader_id", sqlalchemy.ForeignKey("readers.id"), nullable=False, index=True
+    ),
+    sqlalchemy.Column(
+        "book_id", sqlalchemy.ForeignKey("books.id"), nullable=False, index=True
+    ),
+)
+```
+
+## Python environment using decouple
+
+```shell
+pip install python-decouple
+```
+
+```python
+from decouple import config
+
+DATABASE_URL = f"postgresql://{config('DB_USER')}:{config('DB_PASSWORD')}@localhost:{config('DB_PORT')}/{config('DB_NAME')}"
+```

@@ -187,3 +187,18 @@ from decouple import config
 
 DATABASE_URL = f"postgresql://{config('DB_USER')}:{config('DB_PASSWORD')}@localhost:{config('DB_PORT')}/{config('DB_NAME')}"
 ```
+
+## Containers
+
+To run the backend container (with our docker-compose.yaml file)
+
+```sh
+docker build -t ivanova/fastapi:latest .
+docker run -p 8080:80 --name ivanovafastapi dff825cddaca
+```
+
+Using the docker-compose file
+
+```sh
+docker-compose up --build
+```

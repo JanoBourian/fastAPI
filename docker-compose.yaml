@@ -1,0 +1,15 @@
+version: '3'
+services:
+  ivanova-app:
+    restart: always
+    build: ./backend/app
+    volumes:
+      - ./backend/app:/app
+    ports: 
+      - "8080:80"
+    networks:
+      - front-tier
+      - back-tier
+networks:
+  front-tier:
+  back-tier:

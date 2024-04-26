@@ -1,3 +1,4 @@
+from information import information
 from contextlib import asynccontextmanager
 import uuid
 import asyncio
@@ -39,15 +40,19 @@ async def lifespan(app: FastAPI):
     yield
     await data.disconnect()
     await asyncio.sleep(2)
+    
+information.update({
+    "lifespan":lifespan
+})
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(**information)
 
-@app.get("/books/")
+@app.get("/books/", tags=["books"])
 async def get_all_books():
     query = books.select()
     return await data.fetch_all(query)
 
-@app.post("/books/")
+@app.post("/books/", tags=["books"])
 async def create_book(request:Request):
     uuid_value = uuid.uuid4()
     body = await request.json()

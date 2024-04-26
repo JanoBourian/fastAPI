@@ -51,3 +51,16 @@ books = sqlalchemy.Table(
 engine = sqlalchemy.create_engine(DATABASE_URL)
 metadata.create_all(engine)
 ```
+
+## Alembic migration
+
+We should change in *alembic.ini*  = sqlalchemy.url
+We should change in *env.py* = target_metadata
+
+```sh
+alembic init migrations
+alembic revision --autogenerate -m "Initial"
+alembic upgrade head
+alembic history
+alembic downgrade 3b26579a015b
+```

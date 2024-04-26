@@ -20,6 +20,8 @@ DATABASE_URL = '%s://%s:%s@%s:%s/%s'%(
     config.get("DBNAME")
 )
 
+print(f"DATABASE_URL: {DATABASE_URL}")
+
 data = databases.Database(DATABASE_URL)
 metadata = sqlalchemy.MetaData()
 
@@ -29,6 +31,7 @@ books = sqlalchemy.Table(
     sqlalchemy.Column("uuid", sqlalchemy.Uuid, primary_key=True, unique=True),
     sqlalchemy.Column("title", sqlalchemy.String, nullable=False),
     sqlalchemy.Column("author", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("pages", sqlalchemy.Integer, nullable=False),
 )
 
 engine = sqlalchemy.create_engine(DATABASE_URL)

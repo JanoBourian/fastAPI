@@ -1,6 +1,7 @@
 import databases
 import sqlalchemy
 from decouple import config
+from fastapi import FastAPI, Request
 
 DATABASE_URL = f"postgresql://{config('DB_USER')}:{config('DB_PASSWORD')}@{config('DB_HOST')}:{config('DB_PORT')}/{config('DB_NAME')}"
 
@@ -41,8 +42,6 @@ readers_books = sqlalchemy.Table(
 
 engine = sqlalchemy.create_engine(DATABASE_URL)
 metadata.create_all(engine)
-
-from fastapi import FastAPI, Request
 
 app = FastAPI()
 

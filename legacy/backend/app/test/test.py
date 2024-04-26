@@ -1,3 +1,1 @@
 # Test FastAPI
-
-import os

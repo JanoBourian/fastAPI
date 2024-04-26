@@ -18,13 +18,10 @@ tags_metadata = [
         "name": "books",
         "description": "Operations with books. The **login** logic is also here.",
     },
-    {
-        "name": "readers",
-        "description": "Operation with readers"
-    },
+    {"name": "readers", "description": "Operation with readers"},
     {
         "name": "read",
-        "description": "Operation to create relation between books and readers"
+        "description": "Operation to create relation between books and readers",
     },
     {
         "name": "authors",
@@ -42,13 +39,10 @@ information = {
     "summary": "Store app",
     "version": "0.0.1",
     "terms_of_service": "https://example.com/terms/",
-    "contact": {
-        "name": "janobourian",
-        "url": "https://example.com/contact/"
-    },
-    "license_info":{
+    "contact": {"name": "janobourian", "url": "https://example.com/contact/"},
+    "license_info": {
         "name": "Apache 2.0",
         "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
     },
-    "openapi_tags":tags_metadata
+    "openapi_tags": tags_metadata,
 }

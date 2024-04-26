@@ -69,6 +69,7 @@ readers = sqlalchemy.Table(
     sqlalchemy.Column("username", sqlalchemy.String, nullable=False, unique=True),
     sqlalchemy.Column("email", sqlalchemy.String, nullable=False, unique=True),
     sqlalchemy.Column("password", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("reader_role", sqlalchemy.String, nullable=False, default="user"),
     sqlalchemy.Column(
         "created_at",
         sqlalchemy.DateTime,

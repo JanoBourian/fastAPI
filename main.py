@@ -1,4 +1,6 @@
 from information import information
+from passlib.context import CryptContext
+import model_schemas
 from contextlib import asynccontextmanager
 import uuid
 import asyncio
@@ -66,7 +68,7 @@ readers = sqlalchemy.Table(
     sqlalchemy.Column("uuid", sqlalchemy.Uuid, primary_key=True, unique=True),
     sqlalchemy.Column("username", sqlalchemy.String, nullable=False, unique=True),
     sqlalchemy.Column("email", sqlalchemy.String, nullable=False, unique=True),
-    sqlalchemy.Column("password", sqlalchemy.String, nullable=False, unique=True),
+    sqlalchemy.Column("password", sqlalchemy.String, nullable=False),
     sqlalchemy.Column(
         "created_at",
         sqlalchemy.DateTime,
@@ -107,7 +109,10 @@ async def lifespan(app: FastAPI):
 information.update({"lifespan": lifespan})
 
 app = FastAPI(**information)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 @app.get("/books/", tags=["books"])
 async def get_all_books():
@@ -136,20 +141,20 @@ async def create_book(request: Request):
     return {"book": uuid_value}
 
 
-@app.get("/readers/", tags=["readers"])
-async def get_all_readers():
-    query = readers.select()
-    return await data.fetch_all(query)
+# @app.get("/readers/", tags=["readers"])
+# async def get_all_readers():
+#     query = readers.select()
+#     return await data.fetch_all(query)
 
 
-@app.post("/readers/", tags=["readers"])
-async def create_reader(request: Request):
-    uuid_value = uuid.uuid4()
-    body = await request.json()
-    body.update({"uuid": uuid_value})
-    query = readers.insert().values(**body)
-    await data.execute(query)
-    return {"reader": uuid_value}
+# @app.post("/readers/", tags=["readers"])
+# async def create_reader(request: Request):
+#     uuid_value = uuid.uuid4()
+#     body = await request.json()
+#     body.update({"uuid": uuid_value})
+#     query = readers.insert().values(**body)
+#     await data.execute(query)
+#     return {"reader": uuid_value}
 
 
 @app.post("/read/", tags=["read"])
@@ -173,3 +178,13 @@ async def create_read_relation(request: Request):
     query = readers_books.insert().values(**data_to_insert)
     await data.execute(query)
     return {"reader_book": uuid_value}
+
+
+@app.post("/register/", tags=["register"], response_model=model_schemas.UserSignOut)
+async def create_user(user: model_schemas.UserSignIn):
+    user.password = get_password_hash(user.password)
+    uuid_value = uuid.uuid4()
+    data_to_insert = {"uuid": uuid_value, **user.model_dump()}
+    query = readers.insert().values(data_to_insert)
+    await data.execute(query)
+    return await data.fetch_one(readers.select().where(readers.c.uuid == uuid_value))

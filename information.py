@@ -20,6 +20,10 @@ tags_metadata = [
     },
     {"name": "readers", "description": "Operation with readers"},
     {
+        "name": "register",
+        "description": "Operation to create readers",
+    },
+    {
         "name": "read",
         "description": "Operation to create relation between books and readers",
     },
@@ -38,6 +42,9 @@ information = {
     "description": description,
     "summary": "Store app",
     "version": "0.0.1",
+    "redoc_url": None,
+    # "docs_url": None,
+    # "openapi_url": None,
     "terms_of_service": "https://example.com/terms/",
     "contact": {"name": "janobourian", "url": "https://example.com/contact/"},
     "license_info": {

@@ -94,6 +94,11 @@ async def get_all_books():
     query = readers.select()
     return await data.fetch_all(query)
 
+@app.get("/readers/", tags=["readers"])
+async def get_all_readers():
+    query = readers.select()
+    return await data.fetch_all(query)
+
 @app.post("/readers/", tags=["readers"])
 async def create_reader(request:Request):
     uuid_value = uuid.uuid4()
@@ -102,3 +107,25 @@ async def create_reader(request:Request):
     query = readers.insert().values(**body)
     await data.execute(query)
     return {"reader": uuid_value}
+
+@app.post("/read/", tags=["read"])
+async def create_read_relation(request:Request):
+    uuid_value = uuid.uuid4()
+    body = await request.json()
+    # Get reader
+    book_query = books.select().where(books.c.title == body.get("title"))
+    book_data = await data.fetch_one(book_query)
+    book_dict = dict(book_data)
+    #Get book
+    reader_query = readers.select().where(readers.c.username == body.get("username"))
+    reader_data = await data.fetch_one(reader_query)
+    reader_dict = dict(reader_data)
+    
+    data_to_insert = {
+        'uuid': uuid_value,
+        "book_id": book_dict.get("uuid"),
+        "reader_id": reader_dict.get("uuid"),
+    }
+    query = readers_books.insert().values(**data_to_insert)
+    await data.execute(query)
+    return {"reader_book": uuid_value}

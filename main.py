@@ -20,8 +20,6 @@ DATABASE_URL = '%s://%s:%s@%s:%s/%s'%(
     config.get("DBNAME")
 )
 
-print(f"DATABASE_URL: {DATABASE_URL}")
-
 data = databases.Database(DATABASE_URL)
 metadata = sqlalchemy.MetaData()
 
@@ -29,13 +27,29 @@ books = sqlalchemy.Table(
     "books",
     metadata,
     sqlalchemy.Column("uuid", sqlalchemy.Uuid, primary_key=True, unique=True),
-    sqlalchemy.Column("title", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("title", sqlalchemy.String, nullable=False, unique=True),
     sqlalchemy.Column("author", sqlalchemy.String, nullable=False),
     sqlalchemy.Column("pages", sqlalchemy.Integer, nullable=False),
+    # sqlalchemy.Column("reader_uuid", sqlalchemy.ForeignKey("readers.uuid"), nullable=False, index=True),
 )
 
-engine = sqlalchemy.create_engine(DATABASE_URL)
-metadata.create_all(engine)
+readers = sqlalchemy.Table(
+    "readers",
+    metadata,
+    sqlalchemy.Column("uuid", sqlalchemy.Uuid, primary_key=True, unique=True),
+    sqlalchemy.Column("username", sqlalchemy.String, nullable=False, unique=True),
+)
+
+readers_books = sqlalchemy.Table(
+    "readers_books",
+    metadata,
+    sqlalchemy.Column("uuid", sqlalchemy.Uuid, primary_key=True, unique=True),
+    sqlalchemy.Column("book_id", sqlalchemy.ForeignKey("books.uuid"), nullable=False),
+    sqlalchemy.Column("reader_id", sqlalchemy.ForeignKey("readers.uuid"), nullable=False),
+)
+
+# engine = sqlalchemy.create_engine(DATABASE_URL)
+# metadata.create_all(engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -59,7 +73,32 @@ async def get_all_books():
 async def create_book(request:Request):
     uuid_value = uuid.uuid4()
     body = await request.json()
-    body.update({'uuid': uuid_value})
-    query = books.insert().values(**body)
+    
+    query = readers.select().where(readers.c.username == body.get("username"))
+    reader = await data.fetch_one(query)
+    dict_reader = dict(reader)
+    
+    data_to_insert = {
+        'uuid': uuid_value,
+        "title": body.get("title"),
+        "author": body.get("author"),
+        "pages": body.get("pages"),
+        "reader_uuid": dict_reader.get("uuid")
+    }
+    query = books.insert().values(**data_to_insert)
     await data.execute(query)
-    return {"client": uuid_value}
+    return {"book": uuid_value}
+
+@app.get("/readers/", tags=["readers"])
+async def get_all_books():
+    query = readers.select()
+    return await data.fetch_all(query)
+
+@app.post("/readers/", tags=["readers"])
+async def create_reader(request:Request):
+    uuid_value = uuid.uuid4()
+    body = await request.json()
+    body.update({'uuid': uuid_value})
+    query = readers.insert().values(**body)
+    await data.execute(query)
+    return {"reader": uuid_value}

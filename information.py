@@ -19,6 +19,10 @@ tags_metadata = [
         "description": "Operations with books. The **login** logic is also here.",
     },
     {
+        "name": "readers",
+        "description": "Operation with readers"
+    },
+    {
         "name": "authors",
         "description": "Manage items. So _fancy_ they have their own docs.",
         "externalDocs": {

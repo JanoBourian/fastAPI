@@ -1,14 +1,33 @@
 from information import information
 from passlib.context import CryptContext
 import model_schemas
+from datetime import datetime, timedelta, timezone
 from contextlib import asynccontextmanager
 import uuid
 import asyncio
 import databases
 import sqlalchemy
 from dotenv import dotenv_values
-from fastapi import FastAPI, Request
+from typing import Optional, Annotated
+from fastapi import FastAPI, Request, HTTPException, Depends, status
+from fastapi.security import (
+    HTTPBearer,
+    HTTPAuthorizationCredentials,
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+)
+import logging
 import enum
+from jose import JWTError, jwt
+
+logging.basicConfig(
+    encoding="utf-8",
+    format="%(levelname)7s:%(asctime)s %(message)s",
+    datefmt="%m/%d/%Y %I:%M:%S %p",
+    level=logging.INFO,
+    force=True,
+)
+logger = logging.getLogger()
 
 config = {**dotenv_values(".env")}
 
@@ -69,7 +88,8 @@ readers = sqlalchemy.Table(
     sqlalchemy.Column("username", sqlalchemy.String, nullable=False, unique=True),
     sqlalchemy.Column("email", sqlalchemy.String, nullable=False, unique=True),
     sqlalchemy.Column("password", sqlalchemy.String, nullable=False),
-    sqlalchemy.Column("reader_role", sqlalchemy.String, nullable=False, default="user"),
+    sqlalchemy.Column("reader_role", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("disabled", sqlalchemy.Boolean, nullable=False, default=False),
     sqlalchemy.Column(
         "created_at",
         sqlalchemy.DateTime,
@@ -111,17 +131,119 @@ information.update({"lifespan": lifespan})
 
 app = FastAPI(**information)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
 
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-@app.get("/books/", tags=["books"])
-async def get_all_books():
+
+async def get_user(username: str):
+    current_user = await data.fetch_one(
+        readers.select().where(readers.c.username == username)
+    )
+    return dict(current_user)
+
+
+async def authenticate_user(username: str, password: str):
+    current_user = await data.fetch_one(
+        readers.select().where(readers.c.username == username)
+    )
+    user_dict = dict(current_user)
+    if not user_dict:
+        return False
+    if not verify_password(password, user_dict.get("password")):
+        return False
+    return user_dict
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(
+        to_encode, config.get("JWT_SECRET"), algorithm=config.get("JWT_ALGORITHM")
+    )
+    return encoded_jwt
+
+
+async def get_valid_admin(token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(
+            token, config.get("JWT_SECRET"), algorithms=[config.get("JWT_ALGORITHM")]
+        )
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = await get_user(username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+async def get_current_valid_admin(
+    current_user: Annotated[model_schemas.UserSignIn, Depends(get_valid_admin)],
+):
+    if current_user["reader_role"] != "admin":
+        raise HTTPException(status_code=400, detail="User does not have access")
+    return current_user
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(
+            token, config.get("JWT_SECRET"), algorithms=[config.get("JWT_ALGORITHM")]
+        )
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = await get_user(username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+async def get_current_active_user(
+    current_user: Annotated[model_schemas.UserSignIn, Depends(get_current_user)],
+):
+    if current_user["disabled"]:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
+@app.get("/books/", tags=["books"], status_code=200)
+async def get_all_books(
+    user: Annotated[None, Depends(get_current_active_user)],
+    _: Annotated[None, Depends(get_current_valid_admin)],
+):
     query = books.select()
     return await data.fetch_all(query)
 
 
-@app.post("/books/", tags=["books"])
+@app.post("/books/", tags=["books"], status_code=201)
 async def create_book(request: Request):
     uuid_value = uuid.uuid4()
     body = await request.json()
@@ -158,7 +280,7 @@ async def create_book(request: Request):
 #     return {"reader": uuid_value}
 
 
-@app.post("/read/", tags=["read"])
+@app.post("/read/", tags=["read"], status_code=201)
 async def create_read_relation(request: Request):
     uuid_value = uuid.uuid4()
     body = await request.json()
@@ -181,7 +303,7 @@ async def create_read_relation(request: Request):
     return {"reader_book": uuid_value}
 
 
-@app.post("/register/", tags=["register"], response_model=model_schemas.UserSignOut)
+@app.post("/register/", tags=["register"], response_model=model_schemas.UserSignOut, status_code=201)
 async def create_user(user: model_schemas.UserSignIn):
     user.password = get_password_hash(user.password)
     uuid_value = uuid.uuid4()
@@ -189,3 +311,24 @@ async def create_user(user: model_schemas.UserSignIn):
     query = readers.insert().values(data_to_insert)
     await data.execute(query)
     return await data.fetch_one(readers.select().where(readers.c.uuid == uuid_value))
+
+
+@app.post("/token/", tags=["token"], status_code=201)
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], request: Request
+) -> model_schemas.TokenResponse:
+    user = await authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(
+        minutes=int(config.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
+    )
+    access_token = create_access_token(
+        data={"sub": user.get("username")}, expires_delta=access_token_expires
+    )
+    request.state.token = access_token
+    return model_schemas.TokenResponse(access_token=access_token, token_type="bearer")

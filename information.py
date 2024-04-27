@@ -28,6 +28,10 @@ tags_metadata = [
         "description": "Operation to create relation between books and readers",
     },
     {
+        "name": "token",
+        "description": "Operation to login",
+    },
+    {
         "name": "authors",
         "description": "Manage items. So _fancy_ they have their own docs.",
         "externalDocs": {

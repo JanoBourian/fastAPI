@@ -32,6 +32,14 @@ tags_metadata = [
         "description": "Operation to login",
     },
     {
+        "name": "me",
+        "description": "Information about current user",
+    },
+    {
+        "name": "users",
+        "description": "Information about all users",
+    },
+    {
         "name": "authors",
         "description": "Manage items. So _fancy_ they have their own docs.",
         "externalDocs": {

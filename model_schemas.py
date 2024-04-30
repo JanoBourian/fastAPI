@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr
 import datetime
 import enum
 
+
 class SizeEnum(enum.Enum):
     small = "s"
     medium = "m"
@@ -19,6 +20,7 @@ class UserRolesEnum(enum.Enum):
     user = "user"
     admin = "admin"
 
+
 class ActiveUserEnum(enum.Enum):
     enabled = "enabled"
     disabled = "disabled"
@@ -29,14 +31,17 @@ class BaseReaders(BaseModel):
     email: EmailStr
     disabled: bool = False
 
+
 class BaseUsers(BaseModel):
     username: str
     email: EmailStr
     role: UserRolesEnum = UserRolesEnum.guest
     is_active: bool = False
-    
+
+
 class UserSignIn(BaseUsers):
     password: str
+
 
 class UserSignOut(BaseUsers):
     created_at: datetime.datetime

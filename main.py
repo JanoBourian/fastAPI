@@ -9,7 +9,7 @@ import databases
 import sqlalchemy
 from dotenv import dotenv_values
 from typing import Annotated, List
-from fastapi import FastAPI, Request, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import (
     OAuth2PasswordBearer,
     OAuth2PasswordRequestForm,
@@ -124,7 +124,10 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     )
     return encoded_jwt
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> model_schemas.BaseUsers:
+
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)]
+) -> model_schemas.BaseUsers:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -153,19 +156,29 @@ async def get_current_active_user(
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+
 async def get_current_active_admin(
     current_user: Annotated[model_schemas.BaseUsers, Depends(get_current_user)],
 ) -> model_schemas.BaseUsers:
     if current_user.role.value != "admin":
-        raise HTTPException(status_code=400, detail="You do not have permission for this action")
+        raise HTTPException(
+            status_code=400, detail="You do not have permission for this action"
+        )
     return current_user
 
-@app.get("/users/", tags=["users"], response_model=List[model_schemas.BaseUsers], status_code=200)
+
+@app.get(
+    "/users/",
+    tags=["users"],
+    response_model=List[model_schemas.BaseUsers],
+    status_code=200,
+)
 async def get_all_users(
     _: Annotated[List[model_schemas.BaseUsers], Depends(get_current_active_admin)]
 ):
     query = users.select()
     return await data.fetch_all(query)
+
 
 @app.get("/me/", tags=["me"], response_model=model_schemas.BaseUsers, status_code=200)
 async def get_current_user_information(
@@ -175,7 +188,13 @@ async def get_current_user_information(
     query = users.select().where(users.c.username == user.username)
     return await data.fetch_one(query)
 
-@app.post("/register/", tags=["register"], response_model=model_schemas.UserSignOut, status_code=201)
+
+@app.post(
+    "/register/",
+    tags=["register"],
+    response_model=model_schemas.UserSignOut,
+    status_code=201,
+)
 async def create_user(user: model_schemas.UserSignIn):
     user.password = get_password_hash(user.password)
     uuid_value = uuid.uuid4()

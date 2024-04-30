@@ -236,3 +236,13 @@ async def create_user(user: model_schemas.UserSignIn):
     await data.execute(query)
     return await data.fetch_one(users.select().where(users.c.uuid == uuid_value))
 ```
+
+## Clean Code
+
+Clean code is a set of rules and principles that helps to keep our code readable, maintainable, and extendable. 
+
+* black: format your code, but exist another tools like flake8, autopep8 and yapf
+* KISS: Keep it simple, stupid
+* DRY: Do not repeat yourself
+* SoC: 
+* SOLID:

@@ -244,5 +244,14 @@ Clean code is a set of rules and principles that helps to keep our code readable
 * black: format your code, but exist another tools like flake8, autopep8 and yapf
 * KISS: Keep it simple, stupid
 * DRY: Do not repeat yourself
-* SoC: 
+* SoC: Separation of Concerns
 * SOLID:
+    * Single responsibility
+    * Open-closed
+    * Liskov substitution 
+    * Interface segregation
+    * Dependency inversion
+
+Invest in future!
+
+![alt text](image.png)

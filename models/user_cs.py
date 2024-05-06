@@ -1,5 +1,5 @@
 import sqlalchemy
-import enums_for_models
+from models import enums_for_models
 import database_definition
 
 user_cs = sqlalchemy.Table(

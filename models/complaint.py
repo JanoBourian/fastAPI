@@ -1,6 +1,6 @@
 import sqlalchemy
 import database_definition
-import enums_for_models
+from models import enums_for_models
 
 complaint = sqlalchemy.Table(
     "complaints",

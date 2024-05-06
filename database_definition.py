@@ -14,5 +14,5 @@ DATABASE_URL = "%s://%s:%s@%s:%s/%s" % (
 database = databases.Database(DATABASE_URL)
 metadata = sqlalchemy.MetaData()
 
-# engine = sqlalchemy.create_engine(DATABASE_URL)
-# metadata.create_all(engine)
+engine = sqlalchemy.create_engine(DATABASE_URL)
+metadata.create_all(engine)

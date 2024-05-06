@@ -2,7 +2,7 @@ import sqlalchemy
 import enums_for_models
 import database_definition
 
-users_cs = sqlalchemy.Table(
+user_cs = sqlalchemy.Table(
     "users_cs",
     database_definition.metadata,
     sqlalchemy.Column("uuid", sqlalchemy.Uuid, primary_key=True, unique=True),

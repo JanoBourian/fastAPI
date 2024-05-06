@@ -1,7 +1,7 @@
 import sqlalchemy
 import database_definition
 
-photos = sqlalchemy.Table(
+photo = sqlalchemy.Table(
     "photos",
     database_definition.metadata,
     sqlalchemy.Column("uuid", sqlalchemy.Uuid, primary_key=True, unique=True),

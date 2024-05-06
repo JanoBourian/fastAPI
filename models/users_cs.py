@@ -9,7 +9,12 @@ users_cs = sqlalchemy.Table(
     sqlalchemy.Column("username", sqlalchemy.String(20), nullable=False, unique=True),
     sqlalchemy.Column("email", sqlalchemy.String, nullable=False, unique=True),
     sqlalchemy.Column("password", sqlalchemy.String, nullable=False),
-    sqlalchemy.Column("role", sqlalchemy.Enum(enums_for_models.RoleType), nullable=False, server_default=enums_for_models.RoleType.user.name),
+    sqlalchemy.Column(
+        "role",
+        sqlalchemy.Enum(enums_for_models.RoleType),
+        nullable=False,
+        server_default=enums_for_models.RoleType.user.name,
+    ),
     sqlalchemy.Column("is_active", sqlalchemy.Boolean, nullable=False, default=False),
     sqlalchemy.Column(
         "created_at",

@@ -6,3 +6,4 @@ migrations/
 .git
 *.git
 __init__.py
+.ruff_cache

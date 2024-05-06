@@ -4,11 +4,13 @@ from contextlib import asynccontextmanager
 
 app = FastAPI()
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting app...")
     yield
     print("Finishing app...")
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index():

@@ -1,26 +1,17 @@
+from information import information
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
 from contextlib import asynccontextmanager
-
-app = FastAPI()
+from resources.routes import api_router
+import database_definition
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Starting app...")
+    await database_definition.database.connect()
     yield
-    print("Finishing app...")
+    await database_definition.database.disconnect()
 
 
-@app.get("/", response_class=HTMLResponse)
-async def index():
-    return """
-    <html>
-        <head>
-            <title>Some HTML in here</title>
-        </head>
-        <body>
-            <h1>Look ma! HTML!</h1>
-        </body>
-    </html>
-    """
+information.update({"lifespan": lifespan})
+app = FastAPI(**information)
+app.include_router(api_router)

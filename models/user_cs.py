@@ -1,6 +1,7 @@
 import sqlalchemy
 from models import enums_for_models
 import database_definition
+import sqlalchemy as sa
 
 user_cs = sqlalchemy.Table(
     "users_cs",
@@ -15,7 +16,13 @@ user_cs = sqlalchemy.Table(
         nullable=False,
         server_default=enums_for_models.RoleType.user.name,
     ),
-    sqlalchemy.Column("is_active", sqlalchemy.Boolean, nullable=False, default=False),
+    sqlalchemy.Column(
+        "is_active",
+        sqlalchemy.Boolean,
+        default=False,
+        server_default=sa.sql.expression.false(),
+        nullable=False,
+    ),
     sqlalchemy.Column(
         "created_at",
         sqlalchemy.DateTime,

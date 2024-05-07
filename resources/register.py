@@ -17,7 +17,6 @@ async def create_user(user: UsersSchema.UserSignIn):
         user.password = authentication.get_password_hash(user.password)
         uuid_value = uuid.uuid4()
         data_to_insert = {"uuid": uuid_value, "is_active": False, **user.model_dump()}
-
         query = user_cs.insert().values(data_to_insert)
         await database_definition.database.execute(query)
         return await database_definition.database.fetch_one(
